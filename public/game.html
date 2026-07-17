@@ -2,582 +2,646 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Охота за монетами</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xbox Helper TD</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            min-height: 100vh;
-            background: linear-gradient(145deg, #0a0f1e 0%, #0c1222 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', 'Poppins', 'Inter', system-ui, -apple-system, sans-serif;
-            padding: 20px;
+            background: #06080d; color: #fff;
+            font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow: hidden;
         }
-
-        /* Игровая карточка */
-        .game-container {
-            background: rgba(18, 25, 45, 0.7);
-            backdrop-filter: blur(2px);
-            border-radius: 48px;
-            padding: 24px 28px 32px 28px;
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 215, 0, 0.2);
-            transition: all 0.2s;
+        .wrapper { width: min(1500px, 95vw); position: relative; }
+        h1 { text-align: center; color: #6bdcff; margin-bottom: 10px; letter-spacing: 2px; }
+        .description { text-align: center; color: #c8d5df; margin-bottom: 20px; line-height: 1.6; }
+        .topPanel {
+            display: flex; justify-content: space-between; align-items: center; gap: 15px;
+            flex-wrap: wrap; background: #111827; border: 1px solid #2d4b63;
+            border-radius: 12px; padding: 15px; margin-bottom: 15px;
         }
-
-        /* Заголовок */
-        .game-title {
-            text-align: center;
-            font-size: 2.2rem;
-            font-weight: 800;
-            letter-spacing: 2px;
-            background: linear-gradient(135deg, #FFE6A3, #FFB347);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            margin-bottom: 18px;
-            word-break: keep-all;
+        .stats { display: flex; gap: 20px; flex-wrap: wrap; }
+        .stat { color: #7fe8ff; font-weight: bold; }
+        .buttons { display: flex; gap: 10px; }
+        button {
+            padding: 12px 20px; border: none; border-radius: 8px;
+            cursor: pointer; font-weight: bold; transition: .2s;
         }
-
-        /* Поле canvas */
-        canvas {
-            display: block;
-            margin: 0 auto;
-            border-radius: 28px;
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), inset 0 0 0 2px rgba(255,215,0,0.2);
-            cursor: none;
-            background: #101624;
+        button:hover { transform: translateY(-2px); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .start { background: #27c06d; color: white; }
+        .restart { background: #2e7cff; color: white; }
+        .canvasBox {
+            width: 100%; aspect-ratio: 16/9; border: 2px solid #2f89ff;
+            border-radius: 14px; overflow: hidden; background: #0a1018;
+            box-shadow: 0 0 25px rgba(0,160,255,.25); position: relative;
         }
-
-        /* Панель с информацией */
-        .stats-panel {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-top: 20px;
-            gap: 25px;
-            flex-wrap: wrap;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 12px 24px;
-            border-radius: 60px;
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 200, 50, 0.3);
+        canvas { width: 100%; height: 100%; display: block; }
+        .message {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.85); color: #ff5e5e; padding: 12px 28px;
+            border-radius: 30px; font-weight: bold; font-size: 1.2rem;
+            pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 10;
         }
-
-        .stat-card {
-            background: #0f1422;
-            padding: 6px 20px;
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.4), 0 4px 10px rgba(0,0,0,0.2);
-        }
-
-        .stat-label {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: #b9c7d9;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-value {
-            font-weight: 800;
-            font-size: 1.8rem;
-            color: #FFD966;
-            text-shadow: 0 0 5px #ffae00;
-            line-height: 1;
-            font-family: monospace;
-        }
-
-        .restart-btn {
-            background: linear-gradient(95deg, #2a2f45, #1a1f33);
-            border: none;
-            padding: 10px 28px;
-            border-radius: 40px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: #FFE3A4;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 5px 0 #0b0e17;
-            font-family: inherit;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .restart-btn:hover {
-            transform: translateY(-2px);
-            background: linear-gradient(95deg, #3c4370, #272e4a);
-            box-shadow: 0 7px 0 #0b0e17;
-            color: #FFEFB9;
-        }
-
-        .restart-btn:active {
-            transform: translateY(5px);
-            box-shadow: 0 2px 0 #0b0e17;
-        }
-
-        .message-area {
-            background: #0a0e1a;
-            padding: 6px 18px;
-            border-radius: 40px;
-            font-weight: 500;
-            font-size: 0.9rem;
-            color: #ffbc6e;
-            text-align: center;
-            flex: 1;
-            white-space: nowrap;
-        }
-
-        @media (max-width: 950px) {
-            .game-container { padding: 16px 20px 24px; }
-            canvas { width: 100%; height: auto; }
-            .stat-value { font-size: 1.5rem; }
-            .stat-label { font-size: 0.9rem; }
-            .restart-btn { padding: 6px 18px; font-size: 0.9rem; }
-            .message-area { font-size: 0.8rem; white-space: normal; text-align: center; }
-        }
+        .message.show { opacity: 1; }
     </style>
 </head>
 <body>
-
-<div class="game-container">
-    <div class="game-title">✨ Охота за монетами ✨</div>
-
-    <canvas id="gameCanvas" width="800" height="500"></canvas>
-
-    <div class="stats-panel">
-        <div class="stat-card">
-            <span class="stat-label">💰 Счёт</span>
-            <span class="stat-value" id="scoreValue">0</span>
+<div class="wrapper">
+    <h1>Xbox Helper Tower Defense</h1>
+    <div class="description">
+        Защищайте базу от волн противников.<br>
+        Стройте башни вдоль дороги и не дайте врагам пройти.
+    </div>
+    <div class="topPanel">
+        <div class="stats">
+            <div class="stat">❤️ Жизни: <span id="lives">20</span></div>
+            <div class="stat">🪙 Монеты: <span id="coins">200</span></div>
+            <div class="stat">🌊 Волна: <span id="wave">1</span></div>
         </div>
-        <div class="stat-card">
-            <span class="stat-label">⏱️ Время</span>
-            <span class="stat-value" id="timeValue">30</span>
+        <div class="buttons">
+            <button class="start" id="startBtn">Запустить волну</button>
+            <button class="restart" id="restartBtn">Перезапустить игру</button>
         </div>
-        <div class="message-area" id="gameMessage">
-            🎮 Собирай золотые монеты!
-        </div>
-        <button class="restart-btn" id="restartButton">🔄 Начать заново</button>
+    </div>
+    <div class="canvasBox" id="canvasBox">
+        <canvas id="game"></canvas>
+        <div class="message" id="message">Недостаточно монет</div>
     </div>
 </div>
 
 <script>
     (function() {
-        // ---------- Элементы ----------
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        // ========== DOM элементы ==========
+        const canvas = document.getElementById("game");
+        const ctx = canvas.getContext("2d");
+        const startBtn = document.getElementById("startBtn");
+        const restartBtn = document.getElementById("restartBtn");
+        const livesText = document.getElementById("lives");
+        const coinsText = document.getElementById("coins");
+        const waveText = document.getElementById("wave");
+        const messageEl = document.getElementById("message");
 
-        // Размеры игрового поля
-        const WIDTH = 800;
-        const HEIGHT = 500;
-        canvas.width = WIDTH;
-        canvas.height = HEIGHT;
+        // ========== Игровые переменные ==========
+        let lives = 20;
+        let coins = 200;
+        let wave = 1;
 
-        // Параметры игрока (квадрат)
-        const PLAYER_SIZE = 32;          // сторона квадрата (пикселей)
-        let playerX = (WIDTH / 2) - (PLAYER_SIZE / 2);
-        let playerY = (HEIGHT / 2) - (PLAYER_SIZE / 2);
-        
-        // Скорость перемещения (пикселей за кадр)
-        const PLAYER_SPEED = 4.5;
-        
-        // Параметры монеты (золотой круг)
-        const COIN_RADIUS = 14;           // радиус монеты
-        let coinX = 0;
-        let coinY = 0;
-        
-        // Игровые переменные
-        let score = 0;
-        let timeLeft = 30;                // 30 секунд
-        let active = true;                // активна ли игра (не закончена)
-        let timerInterval = null;         // интервал таймера
-        
-        // Флаги нажатых клавиш (для плавного управления)
-        const keys = {
-            ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false,
-            w: false, s: false, a: false, d: false
-        };
-        
-        // DOM элементы интерфейса
-        const scoreSpan = document.getElementById('scoreValue');
-        const timeSpan = document.getElementById('timeValue');
-        const messageDiv = document.getElementById('gameMessage');
-        const restartBtn = document.getElementById('restartButton');
-        
-        // ---------- Вспомогательные функции ----------
-        
-        // Обновить отображение счета
-        function updateScoreUI() {
-            scoreSpan.textContent = score;
+        /** @type {Array<{x, y, speed, health, maxHealth, reward, targetIndex}>} */
+        let enemies = [];
+        let waveRunning = false;
+        let enemiesToSpawn = 0;
+        let spawnTimer = 0;
+        const spawnDelay = 45;
+
+        /** @type {Array<{x, y, range, damage, fireRate, cooldown, target: null|Object, angle: number}>} */
+        let towers = [];
+
+        /** @type {Array<{x, y, target: Object, speed, damage}>} */
+        let bullets = [];
+
+        /** @type {Array<{x, y, vx, vy, life, maxLife, color, size}>} */
+        let particles = [];
+
+        // Мышь
+        let mouse = { x: 0, y: 0, onCanvas: false };
+        let preview = { x: 0, y: 0, valid: false, visible: false };
+        let hoveredTower = null;
+
+        // Константы башен
+        const TOWER_COST = 50;
+        const TOWER_RANGE = 150;
+        const TOWER_DAMAGE = 10;
+        const TOWER_FIRE_RATE = 30; // кадров между выстрелами
+        const MIN_DIST_FROM_ROAD = 40;
+        const MIN_DIST_BETWEEN_TOWERS = 55;
+        const BULLET_SPEED = 8;
+
+        // ========== Маршрут врагов ==========
+        const pathPoints = [
+            { x: 0, y: 150 },
+            { x: 240, y: 150 },
+            { x: 240, y: 320 },
+            { x: 650, y: 320 },
+            { x: 650, y: 580 },
+            { x: 1020, y: 580 },
+            { x: 1020, y: 250 },
+            { x: 1400, y: 250 },
+            { x: 1400, y: 720 },
+            { x: 1600, y: 720 }
+        ];
+
+        // ========== Настройка canvas ==========
+        function resizeCanvas() {
+            canvas.width = 1600;
+            canvas.height = 900;
         }
-        
-        // Обновить отображение времени
-        function updateTimeUI() {
-            timeSpan.textContent = timeLeft;
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ========== Вспомогательные функции ==========
+        function updateUI() {
+            livesText.textContent = lives;
+            coinsText.textContent = coins;
+            waveText.textContent = wave;
         }
-        
-        // Генерация случайной позиции для монеты (с учётом границ и не на игроке)
-        function getRandomCoinPosition() {
-            // границы, чтобы монета полностью помещалась (не вылезала за края)
-            const minX = COIN_RADIUS;
-            const maxX = WIDTH - COIN_RADIUS;
-            const minY = COIN_RADIUS;
-            const maxY = HEIGHT - COIN_RADIUS;
-            
-            let safe = false;
-            let attempts = 0;
-            let randX, randY;
-            const MAX_ATTEMPTS = 50;
-            
-            while (!safe && attempts < MAX_ATTEMPTS) {
-                randX = minX + Math.random() * (maxX - minX);
-                randY = minY + Math.random() * (maxY - minY);
-                
-                // Вычисляем центр игрока (квадрат)
-                const playerCenterX = playerX + PLAYER_SIZE / 2;
-                const playerCenterY = playerY + PLAYER_SIZE / 2;
-                // Расстояние между центром монеты и центром игрока
-                const dx = randX - playerCenterX;
-                const dy = randY - playerCenterY;
-                const dist = Math.hypot(dx, dy);
-                // Нужно, чтобы монета не появлялась прямо на игроке (дистанция больше суммы радиусов + небольшой запас)
-                const minDist = (PLAYER_SIZE / 2) + COIN_RADIUS + 8;
-                if (dist >= minDist) {
-                    safe = true;
+
+        let messageTimeout;
+        function showMessage(text) {
+            messageEl.textContent = text;
+            messageEl.classList.add("show");
+            clearTimeout(messageTimeout);
+            messageTimeout = setTimeout(() => messageEl.classList.remove("show"), 1200);
+        }
+
+        // Расстояние от точки до отрезка
+        function distanceToSegment(px, py, x1, y1, x2, y2) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const lengthSq = dx * dx + dy * dy;
+            if (lengthSq === 0) return Math.hypot(px - x1, py - y1);
+            let t = ((px - x1) * dx + (py - y1) * dy) / lengthSq;
+            t = Math.max(0, Math.min(1, t));
+            const nearX = x1 + t * dx;
+            const nearY = y1 + t * dy;
+            return Math.hypot(px - nearX, py - nearY);
+        }
+
+        function isPlacementValid(x, y) {
+            // Проверка расстояния до дороги
+            for (let i = 0; i < pathPoints.length - 1; i++) {
+                const dist = distanceToSegment(x, y, pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x, pathPoints[i+1].y);
+                if (dist < MIN_DIST_FROM_ROAD) return false;
+            }
+            // Проверка расстояния до других башен
+            for (const tower of towers) {
+                if (Math.hypot(x - tower.x, y - tower.y) < MIN_DIST_BETWEEN_TOWERS) return false;
+            }
+            // Проверка границ
+            if (x < 20 || x > canvas.width - 20 || y < 20 || y > canvas.height - 20) return false;
+            return true;
+        }
+
+        function placeTower(x, y) {
+            if (coins < TOWER_COST) {
+                showMessage("Недостаточно монет");
+                return;
+            }
+            if (!isPlacementValid(x, y)) return;
+
+            towers.push({
+                x, y,
+                range: TOWER_RANGE,
+                damage: TOWER_DAMAGE,
+                fireRate: TOWER_FIRE_RATE,
+                cooldown: 0,
+                target: null,
+                angle: -Math.PI / 2 // по умолчанию вверх
+            });
+            coins -= TOWER_COST;
+            updateUI();
+        }
+
+        // Получение координат мыши относительно canvas
+        function getCanvasCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
+        // ========== Обработчики мыши ==========
+        canvas.addEventListener('mousemove', (e) => {
+            const coords = getCanvasCoords(e);
+            mouse.x = coords.x;
+            mouse.y = coords.y;
+            mouse.onCanvas = true;
+
+            preview.x = coords.x;
+            preview.y = coords.y;
+            preview.valid = isPlacementValid(coords.x, coords.y);
+            preview.visible = true;
+
+            hoveredTower = null;
+            for (const tower of towers) {
+                if (Math.hypot(coords.x - tower.x, coords.y - tower.y) < 20) {
+                    hoveredTower = tower;
+                    break;
                 }
-                attempts++;
             }
-            // Если после попыток не получилось, просто ставим в свободную позицию (почти всегда работает)
-            return { x: randX, y: randY };
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            mouse.onCanvas = false;
+            preview.visible = false;
+            hoveredTower = null;
+        });
+
+        canvas.addEventListener('click', (e) => {
+            if (!mouse.onCanvas || hoveredTower) return;
+            placeTower(mouse.x, mouse.y);
+        });
+
+        // ========== Запуск волны ==========
+        function startWave() {
+            if (waveRunning) return;
+            waveRunning = true;
+            startBtn.disabled = true;
+
+            const count = 3 + wave * 2;
+            enemiesToSpawn = count;
+            spawnTimer = 20;
         }
-        
-        // Создать новую монету (не на игроке)
-        function generateNewCoin() {
-            const { x, y } = getRandomCoinPosition();
-            coinX = x;
-            coinY = y;
+
+        function restartGame() {
+            lives = 20;
+            coins = 200;
+            wave = 1;
+            enemies = [];
+            towers = [];
+            bullets = [];
+            particles = [];
+            waveRunning = false;
+            enemiesToSpawn = 0;
+            spawnTimer = 0;
+            startBtn.disabled = false;
+            hoveredTower = null;
+            updateUI();
         }
-        
-        // Сбор монеты: увеличить счёт, обновить UI, создать новую монету
-        function collectCoin() {
-            if (!active) return;  // игра окончена – монеты не собираем
-            
-            score++;
-            updateScoreUI();
-            generateNewCoin();    // появляется новая монета в случайном месте (не на игроке)
+
+        function spawnEnemy() {
+            const baseSpeed = 2.0;
+            const baseHealth = 20;
+            const baseReward = 10;
+            const speed = baseSpeed + wave * 0.3;
+            const health = baseHealth + wave * 10;
+            const reward = baseReward + wave * 5;
+
+            enemies.push({
+                x: pathPoints[0].x,
+                y: pathPoints[0].y,
+                speed,
+                health,
+                maxHealth: health,
+                reward,
+                targetIndex: 1
+            });
         }
-        
-        // Проверка столкновения игрока с монетой (по расстоянию между центрами)
-        function checkCollision() {
-            if (!active) return false;
-            
-            // Центр игрока (квадрат)
-            const playerCenterX = playerX + PLAYER_SIZE / 2;
-            const playerCenterY = playerY + PLAYER_SIZE / 2;
-            // Расстояние до монеты (круг)
-            const dx = playerCenterX - coinX;
-            const dy = playerCenterY - coinY;
-            const distance = Math.hypot(dx, dy);
-            const collisionDist = (PLAYER_SIZE / 2) + COIN_RADIUS;
-            
-            if (distance < collisionDist) {
-                collectCoin();
-                return true;
+
+        // Создание частиц
+        function addParticles(x, y, count, color, spread = 2) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 1 + Math.random() * spread;
+                particles.push({
+                    x, y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 15 + Math.random() * 10,
+                    maxLife: 25,
+                    color,
+                    size: 2 + Math.random() * 3
+                });
             }
-            return false;
         }
-        
-        // Завершение игры (таймер закончился)
-        function endGame() {
-            if (!active) return; // уже закончена
-            
-            active = false;
-            // Останавливаем отсчёт времени
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-            // Показываем сообщение с результатом
-            messageDiv.innerHTML = `⏰ ИГРА ОКОНЧЕНА! Ваш счёт: ${score} монет ⏰`;
-        }
-        
-        // Сброс и перезапуск игры
-        function resetGame() {
-            // Останавливаем старый таймер, чтобы не накладывался
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-            
-            // Сбрасываем игровое состояние
-            active = true;
-            score = 0;
-            timeLeft = 30;
-            updateScoreUI();
-            updateTimeUI();
-            
-            // Возвращаем игрока в центр
-            playerX = (WIDTH / 2) - (PLAYER_SIZE / 2);
-            playerY = (HEIGHT / 2) - (PLAYER_SIZE / 2);
-            
-            // Генерируем монету (гарантированно не на игроке)
-            generateNewCoin();
-            
-            // Сбрасываем сообщение
-            messageDiv.innerHTML = "🎲 Игра началась! Лови монеты! 🎲";
-            
-            // Запускаем таймер заново
-            timerInterval = setInterval(() => {
-                if (active && timeLeft > 0) {
-                    timeLeft--;
-                    updateTimeUI();
-                    
-                    if (timeLeft <= 0) {
-                        // Время вышло
-                        endGame();
+
+        // ========== Обновление игровой логики ==========
+        function update() {
+            // --- Обновление волны и врагов ---
+            if (waveRunning) {
+                if (enemiesToSpawn > 0) {
+                    spawnTimer--;
+                    if (spawnTimer <= 0) {
+                        spawnEnemy();
+                        enemiesToSpawn--;
+                        spawnTimer = spawnDelay;
                     }
-                } else if (!active) {
-                    // Если игра неактивна, таймер больше не нужен, но очистим позже
-                    if (timerInterval) clearInterval(timerInterval);
                 }
-            }, 1000);
-        }
-        
-        // ---------- Движение игрока (обновление позиции по нажатым клавишам) ----------
-        function updatePlayerMovement() {
-            if (!active) return; // игра остановлена – персонаж не двигается
-            
-            let moveX = 0;
-            let moveY = 0;
-            
-            // Стрелки / WASD
-            if (keys.ArrowUp || keys.w) moveY -= 1;
-            if (keys.ArrowDown || keys.s) moveY += 1;
-            if (keys.ArrowLeft || keys.a) moveX -= 1;
-            if (keys.ArrowRight || keys.d) moveX += 1;
-            
-            // Нормализуем диагональное движение (чтобы скорость по диагонали не была выше)
-            if (moveX !== 0 || moveY !== 0) {
-                const length = Math.hypot(moveX, moveY);
-                moveX = moveX / length;
-                moveY = moveY / length;
+
+                // Движение врагов
+                for (let i = 0; i < enemies.length; i++) {
+                    const enemy = enemies[i];
+                    if (enemy.health <= 0) continue;
+
+                    const target = pathPoints[enemy.targetIndex];
+                    const dx = target.x - enemy.x;
+                    const dy = target.y - enemy.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < enemy.speed) {
+                        enemy.x = target.x;
+                        enemy.y = target.y;
+                        enemy.targetIndex++;
+
+                        if (enemy.targetIndex >= pathPoints.length) {
+                            lives--;
+                            enemy.health = 0;
+                            updateUI();
+                            if (lives <= 0) {
+                                waveRunning = false;
+                                startBtn.disabled = false;
+                                enemiesToSpawn = 0;
+                                alert('Игра окончена!');
+                            }
+                        }
+                    } else {
+                        const dirX = dx / distance;
+                        const dirY = dy / distance;
+                        enemy.x += dirX * enemy.speed;
+                        enemy.y += dirY * enemy.speed;
+                    }
+                }
+
+                // Удаление мёртвых врагов (с конца)
+                for (let i = enemies.length - 1; i >= 0; i--) {
+                    if (enemies[i].health <= 0) {
+                        enemies.splice(i, 1);
+                    }
+                }
+
+                // Проверка завершения волны
+                if (enemiesToSpawn === 0 && enemies.length === 0) {
+                    waveRunning = false;
+                    startBtn.disabled = false;
+                    coins += 50 + wave * 10;
+                    wave++;
+                    updateUI();
+                }
             }
-            
-            // Применяем скорость
-            let newX = playerX + moveX * PLAYER_SPEED;
-            let newY = playerY + moveY * PLAYER_SPEED;
-            
-            // Границы (игрок не должен выходить за пределы поля)
-            newX = Math.min(Math.max(newX, 0), WIDTH - PLAYER_SIZE);
-            newY = Math.min(Math.max(newY, 0), HEIGHT - PLAYER_SIZE);
-            
-            playerX = newX;
-            playerY = newY;
+
+            // --- Логика башен ---
+            for (const tower of towers) {
+                // Уменьшаем кулдаун
+                if (tower.cooldown > 0) {
+                    tower.cooldown--;
+                }
+
+                // Выбор цели
+                let targetEnemy = null;
+                let maxProgress = -1;
+
+                for (const enemy of enemies) {
+                    if (enemy.health <= 0) continue;
+                    const dist = Math.hypot(tower.x - enemy.x, tower.y - enemy.y);
+                    if (dist <= tower.range) {
+                        // Приоритет: враг, который дальше прошёл (больше targetIndex)
+                        if (enemy.targetIndex > maxProgress) {
+                            maxProgress = enemy.targetIndex;
+                            targetEnemy = enemy;
+                        } else if (enemy.targetIndex === maxProgress && targetEnemy) {
+                            // Дополнительно: ближайший к башне при одинаковом прогрессе
+                            const distCurrent = Math.hypot(tower.x - enemy.x, tower.y - enemy.y);
+                            const distPrev = Math.hypot(tower.x - targetEnemy.x, tower.y - targetEnemy.y);
+                            if (distCurrent < distPrev) {
+                                targetEnemy = enemy;
+                            }
+                        }
+                    }
+                }
+
+                tower.target = targetEnemy;
+
+                // Поворот к цели
+                if (targetEnemy) {
+                    tower.angle = Math.atan2(targetEnemy.y - tower.y, targetEnemy.x - tower.x);
+                }
+
+                // Стрельба
+                if (targetEnemy && tower.cooldown <= 0) {
+                    bullets.push({
+                        x: tower.x,
+                        y: tower.y,
+                        target: targetEnemy,
+                        speed: BULLET_SPEED,
+                        damage: tower.damage
+                    });
+                    tower.cooldown = tower.fireRate;
+                }
+            }
+
+            // --- Обновление снарядов ---
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                const target = bullet.target;
+
+                // Если цель мертва или удалена, удаляем снаряд
+                if (!target || target.health <= 0) {
+                    bullets.splice(i, 1);
+                    continue;
+                }
+
+                // Наводимся на цель
+                const dx = target.x - bullet.x;
+                const dy = target.y - bullet.y;
+                const distToTarget = Math.sqrt(dx * dx + dy * dy);
+
+                if (distToTarget < 12) { // Попадание
+                    target.health -= bullet.damage;
+                    addParticles(target.x, target.y, 5, '#ff9f43', 3);
+                    bullets.splice(i, 1);
+
+                    // Если враг убит
+                    if (target.health <= 0) {
+                        coins += target.reward;
+                        updateUI();
+                        addParticles(target.x, target.y, 12, '#e74c3c', 4);
+                    }
+                } else {
+                    // Движение в сторону цели
+                    const dirX = dx / distToTarget;
+                    const dirY = dy / distToTarget;
+                    bullet.x += dirX * bullet.speed;
+                    bullet.y += dirY * bullet.speed;
+                }
+            }
+
+            // --- Обновление частиц ---
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
         }
-        
-        // ---------- Отрисовка всей игры (canvas) ----------
-        function draw() {
-            ctx.clearRect(0, 0, WIDTH, HEIGHT);
-            
-            // 1. Тёмный фон с текстурой сетки (стильно)
-            ctx.fillStyle = "#101624";
-            ctx.fillRect(0, 0, WIDTH, HEIGHT);
-            
-            // Лёгкая сетка для стиля
-            ctx.strokeStyle = "#2a334f";
-            ctx.lineWidth = 0.6;
-            for (let i = 0; i < WIDTH; i += 50) {
+
+        // ========== Отрисовка ==========
+        function drawGrid() {
+            ctx.strokeStyle = "#162334";
+            ctx.lineWidth = 1;
+            const size = 50;
+            for (let x = 0; x <= canvas.width; x += size) {
                 ctx.beginPath();
-                ctx.moveTo(i, 0);
-                ctx.lineTo(i, HEIGHT);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(0, i);
-                ctx.lineTo(WIDTH, i);
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
                 ctx.stroke();
             }
-            
-            // 2. Игрок - сияющий квадрат с градиентом
-            const gradient = ctx.createLinearGradient(playerX, playerY, playerX + PLAYER_SIZE, playerY + PLAYER_SIZE);
-            gradient.addColorStop(0, '#3c82f6');
-            gradient.addColorStop(1, '#1e4a8a');
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = "#3b82f6";
-            ctx.fillStyle = gradient;
-            ctx.fillRect(playerX, playerY, PLAYER_SIZE, PLAYER_SIZE);
-            // рамка
-            ctx.shadowBlur = 0;
-            ctx.strokeStyle = "#FFD966";
+            for (let y = 0; y <= canvas.height; y += size) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+
+        function drawRoad() {
+            ctx.strokeStyle = "#808080";
+            ctx.lineWidth = 60;
+            ctx.lineJoin = "round";
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
+            for (let i = 1; i < pathPoints.length; i++) {
+                ctx.lineTo(pathPoints[i].x, pathPoints[i].y);
+            }
+            ctx.stroke();
+
+            ctx.strokeStyle = "#bfc7d5";
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
+            for (let i = 1; i < pathPoints.length; i++) {
+                ctx.lineTo(pathPoints[i].x, pathPoints[i].y);
+            }
+            ctx.stroke();
+        }
+
+        function drawTowers() {
+            for (const tower of towers) {
+                // Основание
+                ctx.fillStyle = "#4b5563";
+                ctx.beginPath();
+                ctx.arc(tower.x, tower.y, 16, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = "#9ca3af";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Ствол, повернутый в сторону цели (или вверх по умолчанию)
+                ctx.save();
+                ctx.translate(tower.x, tower.y);
+                ctx.rotate(tower.angle);
+                ctx.fillStyle = "#d1d5db";
+                ctx.beginPath();
+                ctx.arc(12, 0, 5, 0, Math.PI * 2); // ствол на расстоянии 12 от центра
+                ctx.fill();
+                ctx.strokeStyle = "#4b5563";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                // Линия ствола
+                ctx.strokeStyle = "#9ca3af";
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(12, 0);
+                ctx.stroke();
+                ctx.restore();
+
+                // Радиус при наведении
+                if (hoveredTower === tower) {
+                    ctx.strokeStyle = "rgba(46, 204, 113, 0.7)";
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(tower.x, tower.y, tower.range, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.fillStyle = "rgba(46, 204, 113, 0.08)";
+                    ctx.fill();
+                }
+            }
+        }
+
+        function drawPreview() {
+            if (!preview.visible || !mouse.onCanvas) return;
+            const radius = 16;
+            const color = preview.valid ? "#2ecc71" : "#e74c3c";
+            ctx.strokeStyle = color;
             ctx.lineWidth = 2;
-            ctx.strokeRect(playerX, playerY, PLAYER_SIZE, PLAYER_SIZE);
-            // глаза (для милоты)
-            ctx.fillStyle = "white";
             ctx.beginPath();
-            ctx.arc(playerX + PLAYER_SIZE * 0.7, playerY + PLAYER_SIZE * 0.35, 4, 0, Math.PI * 2);
-            ctx.arc(playerX + PLAYER_SIZE * 0.3, playerY + PLAYER_SIZE * 0.35, 4, 0, Math.PI * 2);
+            ctx.arc(preview.x, preview.y, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.fillStyle = preview.valid ? "rgba(46, 204, 113, 0.3)" : "rgba(231, 76, 60, 0.3)";
             ctx.fill();
-            ctx.fillStyle = "#0b0f1a";
+
+            ctx.strokeStyle = preview.valid ? "rgba(46, 204, 113, 0.4)" : "rgba(231, 76, 60, 0.4)";
+            ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.arc(playerX + PLAYER_SIZE * 0.7, playerY + PLAYER_SIZE * 0.33, 2, 0, Math.PI * 2);
-            ctx.arc(playerX + PLAYER_SIZE * 0.3, playerY + PLAYER_SIZE * 0.33, 2, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // 3. Монета (золотой круг с блеском)
-            ctx.shadowBlur = 12;
-            ctx.shadowColor = "#ffaa33";
-            // внешнее свечение
-            ctx.beginPath();
-            ctx.arc(coinX, coinY, COIN_RADIUS + 2, 0, Math.PI * 2);
-            ctx.fillStyle = "rgba(255, 200, 50, 0.3)";
-            ctx.fill();
-            // основная монета
-            const coinGrad = ctx.createRadialGradient(coinX - 3, coinY - 3, 3, coinX, coinY, COIN_RADIUS);
-            coinGrad.addColorStop(0, "#FFD966");
-            coinGrad.addColorStop(1, "#E6A800");
-            ctx.beginPath();
-            ctx.arc(coinX, coinY, COIN_RADIUS, 0, Math.PI * 2);
-            ctx.fillStyle = coinGrad;
-            ctx.fill();
-            // символ "$" на монете
-            ctx.font = `bold ${COIN_RADIUS + 4}px "Segoe UI", monospace`;
-            ctx.fillStyle = "#442200";
-            ctx.shadowBlur = 2;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText("$", coinX, coinY + 1);
-            ctx.fillStyle = "#FFEFB0";
-            ctx.fillText("$", coinX - 1, coinY);
-            ctx.shadowBlur = 0;
-            
-            // 4. Доп. эффект если игра закончена – затемняем canvas но не сильно
-            if (!active) {
-                ctx.fillStyle = "rgba(0,0,0,0.6)";
-                ctx.fillRect(0, 0, WIDTH, HEIGHT);
-                ctx.font = "bold 28px 'Segoe UI'";
-                ctx.fillStyle = "#FFD966";
-                ctx.shadowBlur = 0;
-                ctx.textAlign = "center";
-                ctx.fillText("🕹️ ИГРА ЗАВЕРШЕНА", WIDTH/2, HEIGHT/2);
-                ctx.font = "18px monospace";
-                ctx.fillStyle = "#ffe6b3";
-                ctx.fillText(`Ваш результат: ${score} монет`, WIDTH/2, HEIGHT/2 + 45);
-            }
-            
-            // Сброс тени
-            ctx.shadowBlur = 0;
+            ctx.arc(preview.x, preview.y, TOWER_RANGE, 0, Math.PI * 2);
+            ctx.stroke();
         }
-        
-        // ---------- Основной игровой цикл (обновление логики и перерисовка) ----------
-        function gameLoop() {
-            // 1. Движение игрока если активна игра
-            if (active) {
-                updatePlayerMovement();    // обновляем координаты игрока по клавишам
-                checkCollision();          // проверяем подобрана ли монета
+
+        function drawBullets() {
+            for (const bullet of bullets) {
+                ctx.fillStyle = "#ffe66d";
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, 4, 0, Math.PI * 2);
+                ctx.fill();
             }
-            
-            // 2. Рисуем всё на canvas
+        }
+
+        function drawParticles() {
+            for (const p of particles) {
+                const alpha = p.life / p.maxLife;
+                ctx.fillStyle = p.color.replace(')', `, ${alpha})`).replace('rgb', 'rgba');
+                if (p.color.startsWith('#')) {
+                    // Преобразуем hex в rgba
+                    ctx.fillStyle = `rgba(${parseInt(p.color.slice(1,3),16)}, ${parseInt(p.color.slice(3,5),16)}, ${parseInt(p.color.slice(5,7),16)}, ${alpha})`;
+                }
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawEnemies() {
+            for (const enemy of enemies) {
+                if (enemy.health <= 0) continue;
+                ctx.fillStyle = "#e63946";
+                ctx.beginPath();
+                ctx.arc(enemy.x, enemy.y, 14, 0, Math.PI * 2);
+                ctx.fill();
+
+                const barWidth = 30;
+                const barHeight = 5;
+                const barX = enemy.x - barWidth / 2;
+                const barY = enemy.y - 24;
+
+                ctx.fillStyle = "#333";
+                ctx.fillRect(barX, barY, barWidth, barHeight);
+                const healthPercent = enemy.health / enemy.maxHealth;
+                ctx.fillStyle = "#2ecc71";
+                ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+            drawRoad();
+            drawTowers();
+            drawPreview();
+            drawBullets();
+            drawParticles();
+            drawEnemies();
+            requestAnimationFrame(draw);
+        }
+
+        // ========== Игровой цикл ==========
+        function gameLoop() {
+            update();
             draw();
-            
-            // 3. Продолжаем анимацию
             requestAnimationFrame(gameLoop);
         }
-        
-        // ---------- Обработчики клавиш (управление) ----------
-        function handleKeyDown(e) {
-            const key = e.key;
-            // Стрелки и WASD
-            if (keys.hasOwnProperty(key)) {
-                keys[key] = true;
-                e.preventDefault(); // предотвращаем скролл страницы
-            }
-            // Дополнительно, чтобы не прокручивало
-            if (key === "ArrowUp" || key === "ArrowDown" || key === "ArrowLeft" || key === "ArrowRight" ||
-                key === "w" || key === "s" || key === "a" || key === "d") {
-                e.preventDefault();
-            }
-        }
-        
-        function handleKeyUp(e) {
-            const key = e.key;
-            if (keys.hasOwnProperty(key)) {
-                keys[key] = false;
-                e.preventDefault();
-            }
-            if (key === "ArrowUp" || key === "ArrowDown" || key === "ArrowLeft" || key === "ArrowRight" ||
-                key === "w" || key === "s" || key === "a" || key === "d") {
-                e.preventDefault();
-            }
-        }
-        
-        // ---------- Инициализация игры (первый запуск) ----------
-        function initGame() {
-            // Стартовая позиция игрока (центр)
-            playerX = (WIDTH / 2) - (PLAYER_SIZE / 2);
-            playerY = (HEIGHT / 2) - (PLAYER_SIZE / 2);
-            
-            // Генерация первой монеты (не на игроке)
-            generateNewCoin();
-            
-            // Сброс очков и времени
-            score = 0;
-            timeLeft = 30;
-            active = true;
-            updateScoreUI();
-            updateTimeUI();
-            messageDiv.innerHTML = "🎮 Собирай монеты! 30 секунд 🎮";
-            
-            // Очищаем старый интервал, если вдруг остался
-            if (timerInterval) clearInterval(timerInterval);
-            
-            // Запускаем таймер
-            timerInterval = setInterval(() => {
-                if (active && timeLeft > 0) {
-                    timeLeft--;
-                    updateTimeUI();
-                    if (timeLeft <= 0) {
-                        endGame();
-                    }
-                } else if (!active && timerInterval) {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                }
-            }, 1000);
-        }
-        
-        // ---------- Подключаем обработчики и стартуем ----------
-        window.addEventListener('load', () => {
-            initGame();          // первый запуск всех параметров
-            // Слушатели клавиатуры
-            window.addEventListener('keydown', handleKeyDown);
-            window.addEventListener('keyup', handleKeyUp);
-            
-            // Кнопка перезапуска
-            restartBtn.addEventListener('click', () => {
-                resetGame();     // полный сброс и перезапуск
-            });
-            
-            // Запускаем игровой цикл (анимация)
-            gameLoop();
-        });
-        
-        // Дополнительная очистка интервала при потенциальных утечках (необязательно, но корректно)
-        window.addEventListener('beforeunload', () => {
-            if (timerInterval) clearInterval(timerInterval);
-        });
-        
+
+        startBtn.addEventListener('click', startWave);
+        restartBtn.addEventListener('click', restartGame);
+
+        updateUI();
+        gameLoop();
     })();
 </script>
 </body>
