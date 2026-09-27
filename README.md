@@ -1,28 +1,44 @@
-# React Portfolio Starter
+# Xbox Helper Portfolio
 
-## Запуск проекта
+Учебное портфолио на React + Vite со встроенной HTML-игрой.
 
-1. Установи Node.js LTS с сайта nodejs.org
-2. Открой папку проекта в VS Code
-3. Открой терминал
-4. Выполни команды:
+## Требования
+
+- Node.js 20.19 или новее;
+- npm;
+- Git.
+
+## Запуск
 
 ```bash
 npm install
 npm run dev
 ```
 
-5. Открой ссылку из терминала, обычно http://localhost:5173/
+Vite покажет локальный адрес, обычно `http://localhost:5173`.
 
-## Что менять ученику
-
-- `src/App.jsx` — текст, компоненты, список навыков и проектов
-- `src/App.css` — цвета, отступы, размеры, анимации
-
-## Полезные команды
+## Проверка перед публикацией
 
 ```bash
-npm run dev      # запуск разработки
-npm run build    # сборка проекта
-npm run preview  # просмотр сборки
+npm run build
+npm run preview
 ```
+
+Готовая сборка появится в папке `dist`.
+
+## Основные файлы
+
+- `src/App.jsx` — React-компоненты и содержание страницы;
+- `src/App.css` — оформление и анимации;
+- `public/game.html` — встроенная HTML-игра;
+- `public/images` — изображения для портфолио и будущего урока Photoshop.
+
+## Графика из Photoshop
+
+Рекомендуемые файлы:
+
+- `public/images/game-cover.webp` — 1600×900;
+- `public/images/avatar.webp` — 800×800;
+- `public/images/project-cover.webp` — 1200×750.
+
+Не добавляйте в Git папки `node_modules` и `dist` — они уже указаны в `.gitignore`.

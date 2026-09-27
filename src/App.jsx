@@ -6,8 +6,8 @@ function Header({ dark, onToggleTheme }) {
       <div className="logoBlock">
         <div className="logo">⚡</div>
         <div>
-          <h1>БОСС картеля</h1>
-          <p>trade v kripte + work in Unity + famous youtuber and tiktoker</p>
+          <h1>Xbox Helper</h1>
+          <p>Сайты, игры и эксперименты с кодом</p>
         </div>
       </div>
 
@@ -15,7 +15,7 @@ function Header({ dark, onToggleTheme }) {
         <a href="#about">О себе</a>
         <a href="#skills">Навыки</a>
         <a href="#projects">Проекты</a>
-        <button className="themeButton" onClick={onToggleTheme}>
+        <button className="themeButton" onClick={onToggleTheme} type="button" aria-label="Переключить цветовую тему">
           {dark ? "☀️ Светлая" : "🌙 Тёмная"}
         </button>
       </nav>
@@ -28,10 +28,10 @@ function Hero() {
     <section className="hero">
       <div className="heroText">
         <p className="badge">React + Vite</p>
-        <h2>убил картеля,я как декстер морган,булим детей вместе с другом</h2>
+        <h2>Создаю сайты, игры и собственный цифровой мир</h2>
         <p>
-          Это сайт-визитка, собранный из React-компонентов. Здесь можно показать
-          навыки, проекты и свой стиль разработки.
+          Это живое портфолио на React. Здесь собраны мои проекты, HTML-игра,
+          навыки и эксперименты с интерфейсами.
         </p>
         <div className="heroButtons">
           <a className="primaryButton" href="#projects">Смотреть проекты</a>
@@ -92,18 +92,21 @@ function Projects() {
   const projects = [
     {
       title: "Сайт-визитка",
-      description: "Первая React-страница с компонентами, карточками и темой.",
-      tag: "React"
+      description: "Первая React-страница с компонентами, карточками и сменой темы.",
+      tag: "React",
+      href: "#about"
     },
     {
       title: "HTML Tycoon",
       description: "Мини-игра с деньгами, покупками, генераторами и базой.",
-      tag: "Game"
+      tag: "Game",
+      href: "#game"
     },
     {
       title: "Будущий проект",
       description: "Место для нового проекта: бот, игра, сайт или приложение.",
-      tag: "Idea"
+      tag: "Idea",
+      href: "#contacts"
     }
   ];
 
@@ -116,7 +119,7 @@ function Projects() {
             <div className="projectTag">{project.tag}</div>
             <h3>{project.title}</h3>
             <p>{project.description}</p>
-            <button>Подробнее</button>
+            <a className="projectLink" href={project.href}>Подробнее →</a>
           </article>
         ))}
       </div>
@@ -201,7 +204,7 @@ return (
           {commands.map((item, index) => (
             <div
               className="terminalLine"
-              style={{ animationDelay: '${index * 0.35}s' }}
+              style={{ animationDelay: `${index * 0.35}s` }}
               key={item.command}
             >
               <p className="commandText">
@@ -244,12 +247,12 @@ function App() {
 }
 function GameSection() {
   return (
-    <section className="section">
+    <section className="section" id="game">
       <h2>Моя HTML-игра</h2>
-      <p>Это игра, созданная в одном HTML-файле и вставленная на React-сайт.</p>
+      <p>Игра создана в одном HTML-файле и встроена в React-сайт.</p>
 
       <div className="gameBox">
-        <iframe src="/game.html" title="HTML игра"></iframe>
+        <iframe src="/game.html" title="Xbox Helper Tower Defense" loading="lazy"></iframe>
       </div>
     </section>
   );
