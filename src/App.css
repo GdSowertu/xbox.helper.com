@@ -295,12 +295,22 @@ main {
   margin-bottom: 10px;
 }
 
-.projectCard button {
-  border: none;
+.projectLink {
+  display: inline-flex;
+  color: inherit;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 12px;
   padding: 11px 14px;
   cursor: pointer;
   font-weight: 700;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.projectLink:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .contactCards {
@@ -312,9 +322,13 @@ main {
   padding: 18px;
   border-radius: 18px;
   font-weight: 700;
-}.gameBox {
+}
+
+.gameBox {
   width: 100%;
-  height: 600px;
+  aspect-ratio: 16 / 9;
+  min-height: 420px;
+  max-height: 720px;
   border-radius: 24px;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.12);
@@ -356,6 +370,11 @@ main {
   .projectGrid,
   .contactCards {
     grid-template-columns: 1fr;
+  }
+
+  .gameBox {
+    min-height: 520px;
+    aspect-ratio: auto;
   }
 }
 .terminalHeaderText {
@@ -597,6 +616,20 @@ main {
 }
 
 @media (max-width: 700px) {
+  .header,
+  main {
+    width: min(94%, 1120px);
+  }
+
+  .nav {
+    gap: 8px;
+  }
+
+  .nav a,
+  .themeButton {
+    font-size: 13px;
+  }
+
   .terminalScreen {
     padding: 18px;
   }
